@@ -13,47 +13,54 @@ struct STUDENT_DATA {
 	string email;
 };
 
+#define PRE_RELEASE
+
 int main() {
 
-	#ifdef _DEBUG
-		cout << "Running in DEBUG mode!" << endl << endl;
-		ifstream inputFile("StudentData.txt");
+	string fileName;
+
+	#ifdef PRE_RELEASE
+		fileName = "StudentData_Emails.txt";
+		cout << "Running in pre-release mode!" << endl << endl;
 	#else
-		cout << "Running in Release mode!" << endl << endl;
-		ifstream inputFile("StudentData_Emails.txt");
+		cout << "Running in standard mode!" << endl << endl;
+		fileName = "StudentData.txt";
 	#endif
 
-	vector<STUDENT_DATA> students;
-	STUDENT_DATA newStudent;
+	#ifdef _DEBUG
+		ifstream inputFile(fileName);
 
-	string lineData;
+		vector<STUDENT_DATA> students;
+		STUDENT_DATA newStudent;
 
-	int firstCommaIndex, secondCommaIndex;
+		string lineData;
 
-	while (getline(inputFile, lineData)) {
-		firstCommaIndex = lineData.find(",");
+		int firstCommaIndex, secondCommaIndex;
 
-		#ifdef _DEBUG	//reads data in DEBUG mode
-			newStudent.lastName = lineData.substr(0, firstCommaIndex);
-			newStudent.firstName = lineData.substr(firstCommaIndex + 1, lineData.length() - firstCommaIndex);
-		#else			//reads data in RELEASE mode (includes emails)
+		while (getline(inputFile, lineData)) {
+			firstCommaIndex = lineData.find(",");
 			secondCommaIndex = lineData.find(",", firstCommaIndex + 1);
+
 			newStudent.lastName = lineData.substr(0, firstCommaIndex);
 			newStudent.firstName = lineData.substr(firstCommaIndex + 1, secondCommaIndex - firstCommaIndex - 1);
-			newStudent.email = lineData.substr(secondCommaIndex + 1, lineData.length() - secondCommaIndex);
+			
+			#ifdef PRE_RELEASE			//includes emails
+				newStudent.email = lineData.substr(secondCommaIndex + 1, lineData.length() - secondCommaIndex);
+			#endif
+		
+			students.push_back(newStudent);
+		}
+
+		#ifdef PRE_RELEASE		//Prints student info in pre-release mode (first and last name with email)
+			for (int i = 0; i < students.size(); i++) {
+				cout << students[i].firstName << " " << students[i].lastName << " - " << students[i].email << endl;
+			}
+
+		#else	//Prints student info in standard debug mode (first and last name)
+			for (int i = 0; i < students.size(); i++) {
+				cout << students[i].firstName << " " << students[i].lastName << endl;
+			}
 		#endif
-
-		students.push_back(newStudent);
-	}
-
-	#ifdef _DEBUG	//Prints student info in DEBUG mode (first and last name)
-		for (int i = 0; i < students.size(); i++) {
-			cout << students[i].firstName << " " << students[i].lastName << endl;
-		}
-	#else			//Prints student info in RELEASE mode (first and last name with email)
-		for (int i = 0; i < students.size(); i++) {
-			cout << students[i].firstName << " " << students[i].lastName << " - " << students[i].email << endl;
-		}
 	#endif
 
 	return 1;
